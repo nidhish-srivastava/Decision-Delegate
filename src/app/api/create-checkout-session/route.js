@@ -6,44 +6,55 @@ export async function POST(request) {
   // Initialize Razorpay with your key_id and key_secret from Razorpay dashboard
   const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
   const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
-  
+
+  if (!razorpayKeyId || !razorpayKeySecret) {
+    return NextResponse.json(
+      { error: 'Razorpay API keys not configured' },
+      { status: 500 }
+    );
+  }
+
   const razorpay = new Razorpay({
     key_id: razorpayKeyId,
     key_secret: razorpayKeySecret,
   });
-  
+
   try {
     // Parse the request body
     const requestData = await request.json();
     
-    // Generate a unique order ID (you can use any method to create a unique ID)
-    const orderId = 'order_' + Math.random().toString(36).substring(2, 15);
+    // Extract amount from the request or use a default
+    const amount = requestData.amount || 100; // Default 100 paise (₹1)
     
+    // Generate a unique receipt ID
+    const receipt = 'receipt_' + Date.now();
+
     // Create Razorpay order
     const order = await razorpay.orders.create({
-      amount: 100, // Amount in paise (₹1.00)
+      amount: amount,
       currency: 'INR',
-      receipt: orderId,
+      receipt: receipt,
       notes: {
         service: 'decision-delegate',
       },
     });
 
     // Return the order details needed for frontend integration
-    return NextResponse.json({ 
+    return NextResponse.json({
       id: order.id,
       amount: order.amount,
       currency: order.currency,
       key: razorpayKeyId, // Frontend needs this public key
-      // Add any additional data you want to return to the frontend
       success_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/cancel`,
     });
   } catch (error) {
     console.error('Razorpay order creation error:', error);
-    // Handle errors
-    return NextResponse.json({ 
-      error: error.message
-    }, { status: 500 });
+    
+    // Return proper error response
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
   }
 }

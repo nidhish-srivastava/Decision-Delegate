@@ -1,7 +1,7 @@
 import Navbar from '../components/Navbar';
 import FeatureCard from '../components/FeatureCard';
 import Footer from '../components/Footer';
-import DecisionForm from '../components/DecisionForm';
+import RazorpayCheckout from '../components/RazorPayCheckout';
 
 export default function Home() {
   return (
@@ -75,7 +75,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12">Simple Pricing</h2>
           <div className="max-w-lg mx-auto">
-            <DecisionForm />
+            <RazorpayCheckout />
           </div>
         </div>
       </section>
