@@ -44,8 +44,15 @@ export default function RazorpayCheckout() {
             // Handle successful payment
             console.log('Payment successful', response);
             
-            // You can redirect to success page or handle as needed
-            window.location.href = data.success_url;
+            // You should verify the payment on your server before redirecting
+            // This ensures the payment was actually completed
+            verifyPayment(response).then(isVerified => {
+              if (isVerified) {
+                window.location.href = data.success_url;
+              } else {
+                alert('Payment verification failed. Please contact support.');
+              }
+            });
           },
           prefill: {
             name: '',
@@ -79,6 +86,29 @@ export default function RazorpayCheckout() {
       console.error('Payment initialization error:', error);
       setLoading(false);
       alert('Something went wrong while initializing payment');
+    }
+  };
+
+  // Function to verify payment with your backend
+  const verifyPayment = async (paymentResponse) => {
+    try {
+      const verifyResponse = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentResponse),
+      });
+      
+      if (!verifyResponse.ok) {
+        return false;
+      }
+      
+      const verifyData = await verifyResponse.json();
+      return verifyData.verified;
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      return false;
     }
   };
 
