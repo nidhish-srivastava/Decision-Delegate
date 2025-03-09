@@ -4,7 +4,7 @@ import { useState } from 'react';
 export default function RazorpayCheckout() {
   const [loading, setLoading] = useState(false);
 
-  const makePayment = async (amount = 10000) => { // amount in paise (₹100)
+  const makePayment = async (amount = 100) => { // amount in paise (₹1)
     setLoading(true);
     
     try {
@@ -37,20 +37,14 @@ export default function RazorpayCheckout() {
         amount: data.amount,
         currency: data.currency,
         name: 'Decision Delegate',
-        description: 'Outsource your minor decisions for just &#8377;99 . Get personalized, thoughtful recommendations from our team of decision experts.',
+        description: 'Outsource your minor decisions for just ₹99 . Get personalized, thoughtful recommendations from our team of decision experts.',
         order_id: data.id,
         handler: function(response) {
-          // Handle successful payment
+          // Handle successful payment - log the response
           console.log('Payment successful', response);
           
-          // Verify the payment on your server before redirecting
-          verifyPayment(response).then(isVerified => {
-            if (isVerified) {
-              window.location.href = data.success_url;
-            } else {
-              alert('Payment verification failed. Please contact support.');
-            }
-          });
+          // Directly redirect to success page without verification
+          window.location.href = data.success_url;
         },
         prefill: {
           name: '',
@@ -90,31 +84,6 @@ export default function RazorpayCheckout() {
       script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
       document.body.appendChild(script);
     });
-  };
-
-  // Function to verify payment with your backend
-  const verifyPayment = async (paymentResponse) => {
-    try {
-      const verifyResponse = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(paymentResponse),
-      });
-      
-      if (!verifyResponse.ok) {
-        const errorData = await verifyResponse.json();
-        console.error('Verification failed:', errorData);
-        return false;
-      }
-      
-      const verifyData = await verifyResponse.json();
-      return verifyData.verified;
-    } catch (error) {
-      console.error('Payment verification error:', error);
-      return false;
-    }
   };
 
   return (
