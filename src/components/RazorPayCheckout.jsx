@@ -4,7 +4,7 @@ import { useState } from 'react';
 export default function RazorpayCheckout() {
   const [loading, setLoading] = useState(false);
 
-  const makePayment = async (amount = 100) => { // amount in paise (₹1)
+  const makePayment = async (amount = 9900) => { 
     setLoading(true);
     
     try {

@@ -24,7 +24,7 @@ export async function POST(request) {
     const requestData = await request.json();
         
     // Extract amount from the request or use a default
-    const amount = requestData.amount || 100; // Default 100 paise (₹1)
+    const amount = requestData.amount || 9900; // Default 100 paise (₹1)
         
     // Generate a unique receipt ID
     const receipt = 'receipt_' + Date.now();
