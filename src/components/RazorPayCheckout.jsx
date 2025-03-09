@@ -1,4 +1,3 @@
-// components/RazorpayCheckout.js
 'use client';
 import { useState } from 'react';
 
@@ -21,72 +20,76 @@ export default function RazorpayCheckout() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to create order');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create order');
       }
       
       const data = await response.json();
       
-      // Load the Razorpay SDK
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      document.body.appendChild(script);
+      // Load the Razorpay SDK dynamically if not already loaded
+      if (!window.Razorpay) {
+        await loadRazorpayScript();
+      }
       
-      script.onload = () => {
-        // Initialize Razorpay options
-        const options = {
-          key: data.key,
-          amount: data.amount,
-          currency: data.currency,
-          name: 'Your Company Name',
-          description: 'Product/Service Description',
-          order_id: data.id,
-          handler: function(response) {
-            // Handle successful payment
-            console.log('Payment successful', response);
-            
-            // You should verify the payment on your server before redirecting
-            // This ensures the payment was actually completed
-            verifyPayment(response).then(isVerified => {
-              if (isVerified) {
-                window.location.href = data.success_url;
-              } else {
-                alert('Payment verification failed. Please contact support.');
-              }
-            });
-          },
-          prefill: {
-            name: '',
-            email: '',
-            contact: ''
-          },
-          notes: {
-            address: 'Your Company Address'
-          },
-          theme: {
-            color: '#3399cc'
-          },
-          modal: {
-            ondismiss: function() {
-              setLoading(false);
+      // Initialize Razorpay options
+      const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: data.currency,
+        name: 'Decision Delegate',
+        description: 'Outsource your minor decisions for just &#8377;99 . Get personalized, thoughtful recommendations from our team of decision experts.',
+        order_id: data.id,
+        handler: function(response) {
+          // Handle successful payment
+          console.log('Payment successful', response);
+          
+          // Verify the payment on your server before redirecting
+          verifyPayment(response).then(isVerified => {
+            if (isVerified) {
+              window.location.href = data.success_url;
+            } else {
+              alert('Payment verification failed. Please contact support.');
             }
+          });
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        notes: {
+          address: 'Bagalur Cross,Yelahanka,Bangalore'
+        },
+        theme: {
+          color: '#3399cc'
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false);
           }
-        };
-        
-        // Create Razorpay payment object
-        const paymentObject = new window.Razorpay(options);
-        paymentObject.open();
+        }
       };
       
-      script.onerror = () => {
-        setLoading(false);
-        alert('Failed to load Razorpay SDK');
-      };
+      // Create Razorpay payment object
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
       
     } catch (error) {
       console.error('Payment initialization error:', error);
       setLoading(false);
-      alert('Something went wrong while initializing payment');
+      alert(`Payment initialization failed: ${error.message}`);
     }
+  };
+
+  // Function to load Razorpay script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+      document.body.appendChild(script);
+    });
   };
 
   // Function to verify payment with your backend
@@ -101,6 +104,8 @@ export default function RazorpayCheckout() {
       });
       
       if (!verifyResponse.ok) {
+        const errorData = await verifyResponse.json();
+        console.error('Verification failed:', errorData);
         return false;
       }
       
