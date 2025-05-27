@@ -34,7 +34,7 @@ export default function Home() {
             <FeatureCard 
               icon="💳" 
               title="2. Pay Just &#8377;99" 
-              description="Make a secure payment through our Stripe integration. No subscriptions, no hidden fees—just a simple one-time payment."
+              description="Make a secure payment through our Razorpay integration. No subscriptions, no hidden fees—just a simple one-time payment."
             />
             <FeatureCard 
               icon="✅" 
